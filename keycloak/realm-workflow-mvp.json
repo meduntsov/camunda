@@ -1,0 +1,49 @@
+{
+  "realm": "workflow-mvp",
+  "enabled": true,
+  "roles": {
+    "realm": [
+      {"name": "user"},
+      {"name": "manager"},
+      {"name": "finance"},
+      {"name": "admin"}
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "workflow-api",
+      "publicClient": true,
+      "directAccessGrantsEnabled": true,
+      "standardFlowEnabled": true,
+      "redirectUris": ["*"],
+      "webOrigins": ["*"]
+    }
+  ],
+  "users": [
+    {
+      "username": "alice.user",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [{"type": "password", "value": "Passw0rd!", "temporary": false}],
+      "realmRoles": ["user"]
+    },
+    {
+      "username": "marta.manager",
+      "enabled": true,
+      "credentials": [{"type": "password", "value": "Passw0rd!", "temporary": false}],
+      "realmRoles": ["manager"]
+    },
+    {
+      "username": "frank.finance",
+      "enabled": true,
+      "credentials": [{"type": "password", "value": "Passw0rd!", "temporary": false}],
+      "realmRoles": ["finance"]
+    },
+    {
+      "username": "adam.admin",
+      "enabled": true,
+      "credentials": [{"type": "password", "value": "Passw0rd!", "temporary": false}],
+      "realmRoles": ["admin"]
+    }
+  ]
+}
