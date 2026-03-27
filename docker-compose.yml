@@ -1,0 +1,79 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: mvp-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-workflowmvp}
+      POSTGRES_USER: ${POSTGRES_USER:-workflow}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-workflow}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:25.0
+    container_name: mvp-keycloak
+    command: ["start-dev", "--import-realm"]
+    environment:
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-admin}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./keycloak/realm-workflow-mvp.json:/opt/keycloak/data/import/realm-workflow-mvp.json:ro
+    depends_on:
+      - postgres
+
+  zeebe:
+    image: camunda/zeebe:8.5.8
+    container_name: mvp-zeebe
+    environment:
+      ZEEBE_BROKER_GATEWAY_ENABLE: "true"
+      ZEEBE_BROKER_GATEWAY_NETWORK_HOST: 0.0.0.0
+      ZEEBE_BROKER_GATEWAY_SECURITY_AUTHENTICATION_MODE: none
+    ports:
+      - "26500:26500"
+      - "9600:9600"
+
+  openclaw:
+    build:
+      context: ./openclaw
+    container_name: mvp-openclaw
+    ports:
+      - "8081:8081"
+
+  backend:
+    build:
+      context: ./backend
+    container_name: mvp-backend
+    environment:
+      ASPNETCORE_URLS: http://+:8080
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
+      ConnectionStrings__Postgres: Host=postgres;Port=5432;Database=${POSTGRES_DB:-workflowmvp};Username=${POSTGRES_USER:-workflow};Password=${POSTGRES_PASSWORD:-workflow}
+      Auth__Authority: http://keycloak:8080/realms/workflow-mvp
+      Auth__Audience: workflow-api
+      Camunda__GatewayAddress: zeebe:26500
+      Camunda__ProcessId: request_approval_process
+      OpenClaw__BaseUrl: http://openclaw:8081
+    ports:
+      - "${API_PORT:-8088}:8080"
+    depends_on:
+      - postgres
+      - keycloak
+      - zeebe
+      - openclaw
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: mvp-frontend
+    environment:
+      VITE_API_BASE_URL: http://localhost:${API_PORT:-8088}
+    ports:
+      - "${FRONTEND_PORT:-5173}:5173"
+    depends_on:
+      - backend
+
+volumes:
+  postgres-data:

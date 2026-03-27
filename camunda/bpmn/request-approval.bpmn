@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+  xmlns:zeebe="http://camunda.org/schema/zeebe/1.0"
+  id="Definitions_1"
+  targetNamespace="http://workflow-mvp">
+  <bpmn:process id="request_approval_process" name="Request Approval Process" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_1" name="Draft Submitted" />
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_1" targetRef="ManagerApprovalTask" />
+
+    <bpmn:userTask id="ManagerApprovalTask" name="Manager Approval">
+      <bpmn:extensionElements>
+        <zeebe:userTask />
+      </bpmn:extensionElements>
+    </bpmn:userTask>
+
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="ManagerApprovalTask" targetRef="ManagerDecision" />
+
+    <bpmn:exclusiveGateway id="ManagerDecision" name="Manager Decision" />
+    <bpmn:sequenceFlow id="Flow_3" sourceRef="ManagerDecision" targetRef="FinanceApprovalTask">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">= approved = true</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_4" sourceRef="ManagerDecision" targetRef="RejectedEnd">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">= approved = false</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+
+    <bpmn:userTask id="FinanceApprovalTask" name="Finance Approval">
+      <bpmn:extensionElements>
+        <zeebe:userTask />
+      </bpmn:extensionElements>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="Flow_5" sourceRef="FinanceApprovalTask" targetRef="FinanceDecision" />
+
+    <bpmn:exclusiveGateway id="FinanceDecision" name="Finance Decision" />
+    <bpmn:sequenceFlow id="Flow_6" sourceRef="FinanceDecision" targetRef="ApprovedEnd">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">= approved = true</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_7" sourceRef="FinanceDecision" targetRef="RejectedEnd">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">= approved = false</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+
+    <bpmn:endEvent id="ApprovedEnd" name="Approved" />
+    <bpmn:endEvent id="RejectedEnd" name="Rejected" />
+  </bpmn:process>
+
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="request_approval_process">
+      <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="StartEvent_1">
+        <dc:Bounds x="140" y="170" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ManagerApprovalTask_di" bpmnElement="ManagerApprovalTask">
+        <dc:Bounds x="230" y="148" width="140" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ManagerDecision_di" bpmnElement="ManagerDecision" isMarkerVisible="true">
+        <dc:Bounds x="430" y="163" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="FinanceApprovalTask_di" bpmnElement="FinanceApprovalTask">
+        <dc:Bounds x="540" y="148" width="140" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="FinanceDecision_di" bpmnElement="FinanceDecision" isMarkerVisible="true">
+        <dc:Bounds x="730" y="163" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ApprovedEnd_di" bpmnElement="ApprovedEnd">
+        <dc:Bounds x="850" y="120" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="RejectedEnd_di" bpmnElement="RejectedEnd">
+        <dc:Bounds x="850" y="230" width="36" height="36" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNEdge id="Flow_1_di" bpmnElement="Flow_1"><di:waypoint x="176" y="188" /><di:waypoint x="230" y="188" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_2_di" bpmnElement="Flow_2"><di:waypoint x="370" y="188" /><di:waypoint x="430" y="188" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_3_di" bpmnElement="Flow_3"><di:waypoint x="480" y="188" /><di:waypoint x="540" y="188" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_4_di" bpmnElement="Flow_4"><di:waypoint x="455" y="213" /><di:waypoint x="455" y="248" /><di:waypoint x="850" y="248" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_5_di" bpmnElement="Flow_5"><di:waypoint x="680" y="188" /><di:waypoint x="730" y="188" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_6_di" bpmnElement="Flow_6"><di:waypoint x="780" y="188" /><di:waypoint x="868" y="138" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_7_di" bpmnElement="Flow_7"><di:waypoint x="755" y="213" /><di:waypoint x="755" y="248" /><di:waypoint x="850" y="248" /></bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
